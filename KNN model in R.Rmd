@@ -1,0 +1,32 @@
+---
+title: "KNN in R"
+author: "Krishna P Koirala"
+date: "6/14/2018"
+output:
+    md_document:
+     variant: markdown_github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Getting data
+
+
+```{r}
+# The data
+#install.packages('ISLR')
+library(ISLR)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
