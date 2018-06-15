@@ -11,7 +11,66 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# What is K-NN model ?
+
+For a simple binary classification task (two class classification, A, B), *given* 
+training and testing datasets and a positive integer K, for **each record in the test dataset**, 
+KNN tries to find K neighbors in **training set** that are *closest* to that test record and *counts* 
+how many of those K examples in the training set belong to class A, and how many belong to class B. 
+The test record is then classified as belonging to the majority class (based on counted votes) i.e. 
+the test record is considered to be of class i if the majority of the K-nearest neighbors in 
+the training set belong to class i.
+
+As can be seen, there are no parameters that *need to be learned during training* to 
+determine whether a new observation belongs to class A or B. The only parameter used in k-nearest neighbors is k, 
+which is a predetermined value. The algorithm simply works by looking at the training samples, calculating *distances* 
+and finding the K examples in the training set that are closest to the new observation. 
+Thus, KNN is a *non-parametric,* supervised (needs training labels) learning algorithm.
+
+The following diagram illustrates the main idea of how the k-nearest neighbors algorithm works. 
+As K varies from 3 to 6 the class of the new observation (red star) changes from B to A 
+because the majority votes are changed. That is, for K=3, we have 
+two observations of class B and one of class A, while for K=6, we have two observations of class B, and four of class A.
+
+<img src="http://bdewilde.github.io/assets/images/2012-10-26-knn-concept.png" width=600, align = "center">
+<div style="text-align:center"> [[KNN classifications for k=3 and k=6]](http://bdewilde.github.io/blog/blogger/2012/10/26/classification-of-hand-written-digits-3/)
+<br>
+
+For a regression task, the same method can be applied but instead of taking majority votes, we can, for example, 
+find the mean of the response variable of the K-nearest neighbors from the new observation.
+
+KNN depends on 1) 
+the choice of metric (for example, Euclidean in above example), and 2) 
+the choice of K. 
+There are no universal choices, and depending on the data, one has to examine various options to find a suitable choice.
+
+*Caveats:*
+
+* When using KNN, we must ensure that there are no categorical variables (factors) involved in the **features**, 
+simply because one cannot find the distance from them. 
+For example, when a categorical variable takes values from the set {apple, orange, banana, grapes ...}, 
+one cannot make use of numerical distance functions, unless of course there 
+is a pre-determined way to evaluate these distance from a qualitative standpoint.
+
+* If the training set is high-dimensional, KNN will suffer from [the curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality). 
+Therefore, we could use a dimensionality reduction technique prior to using KNN.
+
+* *Standardize* the *training* set before using KNN. Precisely, one can 
+preprocess data so that each training feature (column) has a mean of zero and a standard deviation of one. 
+Note that the order is exact. 
+
+In fact, we will see the **effect** of standardizing training and test sets on the predicted values later.
+
+-------
+
+
+
 # Getting data
+
+
+```{r}
+rm(list = ls())
+```
 
 
 ```{r}
@@ -22,11 +81,76 @@ library(ISLR)
 
 
 ```{r}
-
+str(Caravan); summary(Caravan)
 ```
 
 
 ```{r}
-
+summary(Caravan$Purchase)
 ```
+
+```{r}
+# checking if there are any Nas value
+any(is.na(Caravan))
+# NO nas
+```
+Scale is very important in K-NN model. All data should be in same scale 
+before we building model. To check if data are in same scale or not, find variance of each column.
+
+```{r}
+# Variance of 1st, 2nd column.
+var(Caravan[, 1])
+var(Caravan[, 2])
+```
+
+Clearly variance are way different. So we can change the scale.Scaling(normalizing) other 
+columns except purchase column. Purchase column is the one which I am going to predict.
+
+```{r}
+purchase <- Caravan[, 86] # This the column we want for prediction
+standardized.Caravan <- scale(Caravan[, -86]) # scaling on Remaining columns
+var(standardized.Caravan[, 1])
+var(standardized.Caravan[, 2])
+```
+
+Looks like they came in same scale.
+
+# Train test split
+
+We use a single 80/20% split. We can use the createDataPartition() in caret package to split data. 
+Another way is to use the sample() method supported by base R system to do the random sampling. 
+In this example, we’ll use the sample() method.
+
+```{r}
+# Data partition: randomly split the dataset into a train (80%) and a test set (20%)
+index <- 1:nrow(Caravan)
+set.seed(123)
+train_index <- sample(index, round(length(index)*0.8))
+train_set <- standardized.Caravan[train_index, ]
+test_set <- standardized.Caravan[-train_index, ]
+```
+
+
+```{r}
+dim(train_set); dim(test_set)   #lapply(standardized.Caravan, mean)
+```
+
+
+
+# KNN model building
+
+```{r}
+# Select the true purchase of the training set
+cl <- Caravan[train_index, 'Purchase']
+```
+
+# Build model using different k values
+
+```{r}
+library(class)
+knn1 <- knn(train_set,test_set, cl, k = 1)
+```
+
+
+
 
