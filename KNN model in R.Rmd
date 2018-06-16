@@ -147,10 +147,89 @@ cl <- Caravan[train_index, 'Purchase']
 # Build model using different k values
 
 ```{r}
-library(class)
-knn1 <- knn(train_set,test_set, cl, k = 1)
+library(class) # Contains knn function
+knn1 <- knn(train_set,test_set, cl, k = 1) 
+knn5 <- knn(train_set,test_set, cl, k = 5) 
+knn10 <- knn(train_set,test_set, cl, k = 10) 
+knn15 <- knn(train_set,test_set, cl, k = 15) 
+knn20 <- knn(train_set,test_set, cl, k = 20)
+```
+
+# Evaluate k-NN Models on Test Dataset
+
+```{r}
+ # Select the true purchase of the test set
+cl_test <- Caravan[-train_index,"Purchase"]
+```
+
+```{r}
+#Confusion matrix, k = 1
+table(knn1, cl_test)
+```
+
+```{r}
+# Accuracy, k = 1
+sum(knn1 == cl_test)/nrow(test_set)
 ```
 
 
+```{r}
+#Confusion matrix, k = 5
+table(knn5, cl_test)
+
+#Accuracy, k = 5
+sum(knn5 == cl_test)/nrow(test_set)
+```
+
+```{r}
+ #Confusion matrix, k = 10
+table(knn10, cl_test)
+
+#Accuracy, k = 10
+sum(knn10 == cl_test)/nrow(test_set)
+```
+
+```{r}
+#Confusion matrix, k = 15
+table(knn15, cl_test)
+
+# Accuracy, k = 15
+sum(knn15 == cl_test)/nrow(test_set)
+```
+
+```{r}
+# Confusion matrix, k = 20
+table(knn20, cl_test)
+
+#Accuracy, k = 20
+sum(knn20 == cl_test)/nrow(test_set)
+```
+
+From above it is seen that k=10 has highest accuracy, i.e knn10 model
+is the best model for us.
+
+# Using for loop for Accuracy calculation(Just for fun) 
+
+```{r}
+library(ggplot2)
+knni <- NULL
+Accuracy <- NULL
+for (i in 1:20){
+   knni <- knn(train_set,test_set, cl, k = i)
+   Accuracy[i] <- sum(knni == cl_test)/nrow(test_set)
+}
+print(paste(Accuracy))
+```
 
 
+```{r}
+library(ggplot2)
+k.values <- 1:20
+df = data.frame(k.values,Accuracy)
+ggplot(aes(k.values, Accuracy), data = df) + geom_point() + geom_line(color = 'red')
+```
+
+From above plot we can see that Accuracy of the model is highest for k = 9,10, 11 after that
+it is decreasing slithtly. 
+
+So our best model is knn9, 10, 11.
