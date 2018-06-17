@@ -1,0 +1,102 @@
+---
+title: "KNN in IRIS data"
+author: "Krishna P Koirala"
+date: "6/17/2018"
+output:
+    md_document:
+     variant: markdown_github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())
+head(iris)
+```
+
+# Data Normalization(Data Scaling)
+
+```{r}
+# Normalize columns except 5th column which is species
+iris[1:4] <- lapply(iris[1:4],scale)
+```
+
+
+```{r}
+# mean looks nearly equal to 0 and standard deviation 1
+lapply(iris[1:4],mean); sapply(iris[1:4],sd)
+```
+
+```{r}
+str(iris)
+```
+
+
+
+
+Our data looks normalized, awesome.
+
+# Data Split in Train/Test
+
+```{r}
+set.seed(101)
+library(caTools)
+sample <- sample.split(iris$Species, SplitRatio = 0.7)
+train <- subset(iris, sample == TRUE)
+test <- subset(iris, sample == FALSE)
+```
+
+
+# Model Building
+
+
+```{r}
+library(class)
+Predicted.species <- knn(train[1:4], test[1:4], train$Species, k = 1)
+# Above equation giving me the predicted species for the test set, by using the information of species in train. 
+```
+
+# Calculate the missclassification rate of the model
+```{r}
+mean(test$Species != Predicted.species)
+# Not so bad
+```
+
+
+# K value plot
+
+```{r}
+Predicted.species <- NULL
+error.rate <- NULL
+
+for (i in 1:15){
+    set.seed(101)
+    Predicted.species <- knn(train[1:4], test[1:4], train$Species, k = i)
+    error.rate[i] <- mean(test$Species != Predicted.species)
+}
+```
+
+# Create df
+
+```{r}
+k.values <- 1:15
+error.df <- data.frame(error.rate, k.values)
+```
+
+# Plot
+
+```{r}
+library(ggplot2)
+ggplot(aes(k.values, error.rate), data = error.df) + geom_line(color = 'red') + geom_point(color = 'blue') + theme_classic()
+```
+
+From the above plot it is clear that error rate is smallest for 
+k = 2 to 4 and k = 10, 15. For us lets choose 4
+
+
+
+
+
